@@ -1,4 +1,6 @@
 import java.awt.Graphics;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 
 public abstract class Engine {
@@ -15,23 +17,26 @@ public abstract class Engine {
 	
 	private void createWindow() {
 		display = new Display(title, width, height);
-		initGraphics();
 	}
 	
 	private void initGraphics() {
+		System.out.println("Init graphics");
         bufferStrategy = display.getCanvas().getBufferStrategy(); //Hidden screen to prevent flickering
         //First time running the game
         if (bufferStrategy==null){
             display.getCanvas().createBufferStrategy(3); //Don't need more than 3
-            return;
+            bufferStrategy = display.getCanvas().getBufferStrategy();
         }
         graphics = bufferStrategy.getDrawGraphics();  //Like a paintbrush to draw on the canvas
         //Clear window
-        clear();
-        show();
+        if (graphics == null) {
+        	System.out.println("no graphics");
+        	System.exit(1);
+        }
 	}
 	
 	private void clear() {
+        graphics = bufferStrategy.getDrawGraphics();  //Like a paintbrush to draw on the canvas
         graphics.clearRect(0,0,width,height);
 	}
 	
@@ -39,6 +44,11 @@ public abstract class Engine {
 		bufferStrategy.show();
         graphics.dispose();
 	}
+	
+	public void draw(Sprite s, int posX, int posY) {
+		s.draw(graphics, posX, posY);
+	}
+	
 	public void setFps(int f) {
 		fps = f;
 	}
@@ -50,6 +60,12 @@ public abstract class Engine {
 	}
 	
 	public void start() {
+		display.getCanvas().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				onKeyPressed(e);
+			}
+		});
 		onUserStart();
         double timePerUpdate = 1000000000 / fps; //1 billion nanoseconds in a second
         double d = 0;
@@ -72,6 +88,11 @@ public abstract class Engine {
 	
 	public Boolean init() {
 		createWindow();
+		System.out.println("+ created window");
+		initGraphics();
+		System.out.println("+ created graphics");
+		
+		System.out.println("+ bound key events");
 		return graphics != null && bufferStrategy != null;
 	}
 	
@@ -93,5 +114,5 @@ public abstract class Engine {
 
 	public abstract void onUserStart();
 	public abstract void onUserUpdate();
- 
+	public abstract void onKeyPressed(KeyEvent e);
 }
