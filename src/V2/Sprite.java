@@ -10,7 +10,6 @@ import javax.imageio.ImageIO;
 public class Sprite {
     private BufferedImage texture;
     private String path;
-    public Graphics g;
 
 
     public Sprite(String p) {
@@ -24,7 +23,6 @@ public class Sprite {
     }
 
     public void draw(Graphics g, int posX, int posY) {
-        this.g = g;
         g.drawImage(texture, posX, posY, null);
     }
 

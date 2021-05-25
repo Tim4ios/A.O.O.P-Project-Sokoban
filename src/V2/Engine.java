@@ -14,7 +14,7 @@ public abstract class Engine {
     private int fps = 30;
     private Display display = null;
     private BufferStrategy bufferStrategy = null;
-    private Graphics g = null;
+    protected Graphics g = null;
     private Boolean isRunning = false;
 
     private void createWindow() {
@@ -50,7 +50,11 @@ public abstract class Engine {
     public void draw(Sprite s, int posX, int posY) {
         s.draw(g, posX, posY);
     }
-
+    
+    public void draw(String s, int posX, int posY) {
+    	g.drawString(s, posX, posY);
+    }
+    
     public void setFps(int f) {
         fps = f;
     }

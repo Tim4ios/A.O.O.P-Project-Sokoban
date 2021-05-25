@@ -8,7 +8,6 @@ public class Sokoban extends Engine {
     public int currentLvl;
     public PlayField pf;
     private Sprite box, wall, player, blank, target, boxPlaced;
-    public Graphics g;
     public int tick;
 
     boolean firstRun = true;
@@ -34,22 +33,9 @@ public class Sokoban extends Engine {
         boxPlaced = new Sprite("res/Textures/sokoban_icons/cratemarked.png");
         target = new Sprite("res/Textures/sokoban_icons/blankmarked.png");
     }
-
-    @Override
-    public void onUserUpdate() {
-        win = true;
-        //Make sure to keep the target painted even if a player or block passes it
-        for (PlayerCoordinates p : PlayField.targets) {
-
-            if(!(level[p.getPosX()][p.getPosY()]=='P')&&!(level[p.getPosX()][p.getPosY()]=='B')&&!(level[p.getPosX()][p.getPosY()]=='W')){
-                level[p.getPosX()][p.getPosY()] ='T';
-            }
-            //If all the target squares have filled in box on them the player have won
-            if(!(level[p.getPosX()][p.getPosY()]=='W')){
-                win = false;
-            }
-        }
-
+    
+    
+    private void drawLevel() {
         for (int i = 0; i < level.length; i++) {
             for (int j = 0; j < level[i].length; j++) {
                 switch(level[i][j]) {
@@ -74,32 +60,55 @@ public class Sokoban extends Engine {
                 }
             }
         }
+    }
 
-       g = box.g;
+    @Override
+    public void onUserUpdate() {
+        win = true;
+        //Make sure to keep the target painted even if a player or block passes it
+        for (PlayerCoordinates p : PlayField.targets) {
+
+            if(!(getPositionInField(p.getPosX(), p.getPosY())== 'P') && !(getPositionInField(p.getPosX(), p.getPosY()) =='B') && !(getPositionInField(p.getPosX(), p.getPosY()) == 'W')){
+                level[p.getPosX()][p.getPosY()] ='T';
+            }
+            //If all the target squares have filled in box on them the player has won
+            if(!(getPositionInField(p.getPosX(), p.getPosY()) =='W')){
+                win = false;
+            }
+        }
+        
+        drawLevel();
+
         //Explain game premiss to use
         g.setColor(Color.BLUE);
         g.setFont(new Font("Bold", 1, 15));
         if(firstRun) {
-            g.clearRect(20,120,280,80);
-            g.drawString("Move the boxes to their targets", 35, 160);
-            g.drawString("press R to restart", 84, 175);
+            draw("Move the boxes to their targets", 35, 160);
+            draw("press R to restart", 84, 175);
         }
 
         //If all the boxes have reached their targets
         if(win){
-            g.clearRect(20,120,280,80);
             if(currentLvl==3){
-                g.drawString("You beat the final level!!!", 64, 160);
-                g.drawString("Press enter to start over", 64, 175);
+                draw("You beat the final level!!!", 64, 160);
+                draw("Press enter to start over", 64, 175);
             }else
-                g.drawString("You win, press enter for next lvl", 32, 160);
+                draw("You win, press enter for next lvl", 32, 160);
         }
 
         //Banner saying which level the user currently is on moving across the screen
         g.setColor(Color.WHITE);
-        g.drawString("Level: "+(currentLvl+1), tick++, 20);
+        draw("Level: "+(currentLvl+1), tick++, 20);
         if(tick==320)
             tick=0;
+    }
+    
+    private char getPositionInField(int x, int y) {
+    	return level[x][y];
+    }
+    
+    private char setPositionInField(char c, int x, int y) {
+    	level[x][y] = c;
     }
 
     @Override
@@ -110,21 +119,23 @@ public class Sokoban extends Engine {
         try {
             if (direction == KeyEvent.VK_LEFT) {
                 //if there is a box to the left of the player
-                if((level[pc.getPosX()-1][pc.getPosY()] == 'B'||level[pc.getPosX()-1][pc.getPosY()] == 'W')) {
-                    //if there isn't a wall or another box after the box (our boy isn't that strong)
-                    if (!(level[pc.getPosX()-2][pc.getPosY()] == '*')&&!(level[pc.getPosX()-2][pc.getPosY()] == 'B')&&!(level[pc.getPosX()-2][pc.getPosY()] == 'W')) {
-                        if((level[pc.getPosX()-2][pc.getPosY()] == 'T')){
-                            level[pc.getPosX()-2][pc.getPosY()]='W';
-                        }else{
-                            level[pc.getPosX()-2][pc.getPosY()]='B';
+                if((getPositionInField(pc.getPosX()-1,pc.getPosY()) == 'B'|| getPositionInField(pc.getPosX()-1,pc.getPosY()) == 'W')) {
+                    //if there isn't a wall or another box after the box
+                    if (!(getPositionInField(pc.getPosX()-2,pc.getPosY()) == '*')
+                    && !(getPositionInField(pc.getPosX()-2,pc.getPosY()) == 'B')
+                    && !(getPositionInField(pc.getPosX()-2,pc.getPosY()) == 'W')) {
+                        if (( getPositionInField(level[pc.getPosX()-2, pc.getPosY()) == 'T')){
+                        	setPositionInField('W', pc.getPosX()-2, pc.getPosY());
+                        } else {
+                        	setPositionInField('B', pc.getPosX()-2, pc.getPosY());
                         }
-                        level[pc.getPosX()][pc.getPosY()]=' '; //The spot the player was in is turning blanc
-                        level[pc.getPosX()-1][pc.getPosY()]='P';
+                        setPositionInField(' ', pc.getPosX(), pc.getPosY()); //The spot the player was in is turning blank
+                        setPositionInField('P', pc.getPosX()-1, pc.getPosY());
                         pc.setPosX(pc.getPosX()-1);
                     }
-                }else if(!(level[pc.getPosX()-1][pc.getPosY()] == '*')){
-                    level[pc.getPosX()][pc.getPosY()]=' '; //The spot the player was in is turning blanc
-                    level[pc.getPosX()-1][pc.getPosY()]='P';
+                } else if (!(getPositionInField(pc.getPosX()-1, pc.getPosY()) == '*')) {
+                    setPositionInField(' ', pc.getPosX(), pc.getPosY()); //The spot the player was in is turning blank
+                    setPositionInField('P', pc.getPosX()-1, pc.getPosY());
                     pc.setPosX(pc.getPosX()-1);
 
                 }
@@ -132,65 +143,70 @@ public class Sokoban extends Engine {
             }
             if (direction == KeyEvent.VK_RIGHT) {
                 //if there is a box right of the player
-                if((level[pc.getPosX()+1][pc.getPosY()] == 'B'||level[pc.getPosX()+1][pc.getPosY()] == 'W')) {
+                if ((getPositionInField(pc.getPosX()+1, pc.getPosY()) == 'B'|| getPositionInField(pc.getPosX()+1, pc.getPosY()) == 'W')) {
                     //if there isn't a wall or another box after the box (our boy isn't that strong)
-                    if (!(level[pc.getPosX()+2][pc.getPosY()] == '*')&&!(level[pc.getPosX()+2][pc.getPosY()] == 'B')&&!(level[pc.getPosX()+2][pc.getPosY()] == 'W')) {
-                        if((level[pc.getPosX()+2][pc.getPosY()] == 'T')){
-                            level[pc.getPosX()+2][pc.getPosY()]='W';
-                        }else{
-                            level[pc.getPosX()+2][pc.getPosY()]='B';
+                    if (!(getPositionInField(pc.getPosX()+2, pc.getPosY()) == '*')
+                    && !(getPositionInField(pc.getPosX()+2, pc.getPosY()) == 'B')
+                    && !(getPositionInField(pc.getPosX()+2, pc.getPosY()) == 'W')) {
+                        if((getPositionInField(pc.getPosX()+2, pc.getPosY()) == 'T')){
+                            setPositionInField('W', pc.getPosX()+2, pc.getPosY());
+                        } else {
+                        	setPositionInField('B', pc.getPosX() + 2, pc.getPosY());
                         }
-                        level[pc.getPosX()][pc.getPosY()]=' '; //The spot the player was in is turning blanc
-                        level[pc.getPosX()+1][pc.getPosY()]='P';
+                        setPositionInField(' ', pc.getPosX(), pc.getPosY()); //The spot the player was in is turning blank
+                        setPositionInField('P', pc.getPosX(), pc.getPosY());
                         pc.setPosX(pc.getPosX()+1); //Change xVal since we are moving on the x-axis
                     }
                     //if there isn't a wall right of the player
-                }else if(!(level[pc.getPosX()+1][pc.getPosY()] == '*')){
-                    level[pc.getPosX()][pc.getPosY()]=' '; //The spot the player was in is turning blanc
-                    level[pc.getPosX()+1][pc.getPosY()]='P';
+                }else if (!(getPositionInField(pc.getPosX()+1, pc.getPosY()) == '*')) {
+                	setPositionInField(' ', pc.getPosX(), pc.getPosY()); //The spot the player was in is turning blank
+                	setPositionInField('P', pc.getPosX() + 1 , pc.getPosY());
                     pc.setPosX(pc.getPosX()+1);
                 }
             }
             if (direction == KeyEvent.VK_UP) {
 
                 //if there is a box to the left of the player
-                if((level[pc.getPosX()][pc.getPosY()-1] == 'B'||level[pc.getPosX()][pc.getPosY()-1] == 'W')) {
+                if(( getPositionInField(pc.getPosX(), pc.getPosY()) == 'B'|| getPositionInField(pc.getPosX(), pc.getPosY()-1) == 'W')) {
                     //if there isn't a wall or another box after the box (our boy isn't that strong)
-                    if (!(level[pc.getPosX()][pc.getPosY()-2] == '*')&&!(level[pc.getPosX()][pc.getPosY()-2] == 'B')&&!(level[pc.getPosX()][pc.getPosY()-2] == 'W')) {
-                        if((level[pc.getPosX()][pc.getPosY()-2] == 'T')){
-                            level[pc.getPosX()][pc.getPosY()-2]='W';
-                        }else{
-                            level[pc.getPosX()][pc.getPosY()-2]='B';
+                    if (!(getPositionInField(pc.getPosX(), pc.getPosY()-2) == '*')
+                    && !(getPositionInField(pc.getPosX(), pc.getPosY()-2) == 'B')
+                    && !(getPositionInField(pc.getPosX(), pc.getPosY()-2) == 'W')) {
+                        if((getPositionInField(pc.getPosX(), pc.getPosY()-2) == 'T')) {
+                            setPositionInField('W', pc.getPosX(), pc.getPosY()-2);
+                        } else {
+                            setPositionInField('B', pc.getPosX(), pc.getPosY()-2);
                         }
-                        level[pc.getPosX()][pc.getPosY()]=' '; //The spot the player was in is turning blanc
-                        level[pc.getPosX()][pc.getPosY()-1]='P';
+                        setPositionInField(' ', pc.getPosX(), pc.getPosY()); //The spot the player was in is turning blank
+                        setPositionInField('P', pc.getPosX(), pc.getPosY()-1);
                         pc.setPosY(pc.getPosY()-1);
                     }
-                }else if(!(level[pc.getPosX()][pc.getPosY()-1] == '*')){
-                    level[pc.getPosX()][pc.getPosY()]=' '; //The spot the player was in is turning blanc
-                    level[pc.getPosX()][pc.getPosY()-1]='P';
+                } else if (!(getPositionInField(pc.getPosX(), pc.getPosY()-1) == '*')) {
+                	setPositionInField(' ', pc.getPosX(), pc.getPosY());
+                	setPositionInField('P', pc.getPosX(), pc.getPosY()-1);
                     pc.setPosY(pc.getPosY()-1);
 
                 }
 
             }
             if (direction == KeyEvent.VK_DOWN) {
-                if((level[pc.getPosX()][pc.getPosY()+1] == 'B'||level[pc.getPosX()][pc.getPosY()+1] == 'W')) {
+                if((getPositionInField(pc.getPosX(), pc.getPosY()+1) == 'B'|| getPositionInField(pc.getPosX(), pc.getPosY()+1) == 'W')) {
                     //if there isn't a wall or another box after the box (our boy isn't that strong)
-                    if (!(level[pc.getPosX()][pc.getPosY()+2] == '*')&&!(level[pc.getPosX()][pc.getPosY()+2] == 'B')&&!(level[pc.getPosX()][pc.getPosY()+2] == 'W')) {
-                        if((level[pc.getPosX()][pc.getPosY()+2] == 'T')){
-                            level[pc.getPosX()][pc.getPosY()+2]='W';
-                        }else{
-                            level[pc.getPosX()][pc.getPosY()+2]='B';
+                    if (!(getPositionInField(pc.getPosX(), pc.getPosY()+2) == '*')
+                    && !(getPositionInField(pc.getPosX(), pc.getPosY()+2) == 'B')
+                    && !(getPositionInField(pc.getPosX(), pc.getPosY()+2) == 'W')) {
+                        if((getPositionInField(pc.getPosX(), pc.getPosY()+2) == 'T')) {
+                            setPositionInField('W', pc.getPosX(), pc.getPosY()+2);
+                        } else {
+                        	setPositionInField('B', pc.getPosX(), pc.getPosY()+2);
                         }
-                        level[pc.getPosX()][pc.getPosY()]=' '; //The spot the player was in is turning blanc
-                        level[pc.getPosX()][pc.getPosY()+1]='P';
-
+                        setPositionInField(' ', pc.getPosX(), pc.getPosY());
+                        setPositionInField('P', pc.getPosX(), pc.getPosY()+1);
                         pc.setPosY(pc.getPosY()+1);
                     }
-                }else if(!(level[pc.getPosX()][pc.getPosY()+1] == '*')){
-                    level[pc.getPosX()][pc.getPosY()]=' '; //The spot the player was in is turning blanc
-                    level[pc.getPosX()][pc.getPosY()+1]='P';
+                }else if (!(getPositionInField(pc.getPosX(), pc.getPosY()+1) == '*')) {
+                	setPositionInField(' ', pc.getPosX(), pc.getPosY());
+                	setPositionInField('P', pc.getPosX(), pc.getPosY()+1);
                     pc.setPosY(pc.getPosY()+1);
                 }
                 //User press R to restart lvl
