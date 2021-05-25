@@ -1,5 +1,6 @@
+package V2;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PlayField {
     //Our playfield is 10x10 which will contain walls, player, boxes and target

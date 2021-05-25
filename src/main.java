@@ -2,7 +2,7 @@ import java.awt.image.BufferedImage;
 
 public class main {
      public static void main(String[] args) {
-        GameRun game = new GameRun("SOKOBAN!!!",300,300);
+        GameRun game = new GameRun("SOKOBAN!!!",320,320); //each image is 32x32
         game.start();
 
         PlayField f = new PlayField();

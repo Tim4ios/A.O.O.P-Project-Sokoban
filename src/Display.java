@@ -4,8 +4,9 @@ import java.awt.*;
 public class Display {
     private JFrame jFrame;
     private Canvas canvas;
-    private int height, width;
-    private String title;
+    private final int height;
+    private final int width;
+    private final String title;
 
     public Display(int height, int width, String title) {
         this.height = height;
@@ -13,6 +14,7 @@ public class Display {
         this.title = title;
         initDisplay(); //Avoid cluttering
     }
+
     private void initDisplay(){
         //Frame set up
          jFrame = new JFrame(title);
